@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nepali Barhakhari Random Picker</title>
+</head>
+<body style="margin:0;">
+<div id="barakhari-picker" style="min-height:100vh;background-color:#fffaf0;color:#241f18;padding:28px 18px;font-family:'Noto Sans Devanagari','Noto Sans',Arial,sans-serif;border-radius:0;box-sizing:border-box;">
+  <style>
+    #barakhari-picker .wrap{max-width:760px;margin:0 auto;text-align:center}
+    #barakhari-picker .intro{font-size:1rem;opacity:.72;margin:0 0 22px}
+    #barakhari-picker .display{display:flex;align-items:center;justify-content:center;min-height:260px;background:#ffffff;border:2px solid #e7d7b9;border-radius:28px;margin:0 auto 22px;padding:24px}
+    #barakhari-picker .letter{font-size:clamp(7rem,25vw,13rem);font-weight:800;line-height:1;color:#3d3020}
+    #barakhari-picker .controls{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
+    #barakhari-picker button{min-height:48px;border:0;border-radius:14px;padding:12px 22px;font-size:1rem;font-weight:700;cursor:pointer}
+    #barakhari-picker .pick{background:#d96b32;color:#fff}
+    #barakhari-picker .reset{background:#ece4d7;color:#241f18;border:1px solid #d7c9b4}
+    #barakhari-picker .groups{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+    #barakhari-picker .group{background:#f4ead9;border-radius:16px;padding:14px 8px;font-size:1.15rem;font-weight:700}
+    #barakhari-picker .count{margin-top:18px;font-size:.9rem;opacity:.65}
+    @media(max-width:520px){#barakhari-picker{padding:22px 14px}#barakhari-picker .display{min-height:220px}#barakhari-picker .groups{grid-template-columns:repeat(2,1fr)}}
+  </style>
+  <div class="wrap">
+    <p class="intro">क, ख, ग, घ — बाह्रखरी पढ्ने अभ्यास</p>
+    <div class="display" aria-live="polite"><div class="letter" id="bp-letter">क</div></div>
+    <div class="controls">
+      <button type="button" class="pick" id="bp-pick">🎲 Pick Random</button>
+      <button type="button" class="reset" id="bp-reset">Start Again</button>
+    </div>
+    <div class="groups">
+      <div class="group">क</div><div class="group">ख</div><div class="group">ग</div><div class="group">घ</div>
+    </div>
+    <div class="count">48 Barhakhari combinations included</div>
+  </div>
+  <script>
+    const items=['क','का','कि','की','कु','कू','के','कै','को','कौ','कं','कः','ख','खा','खि','खी','खु','खू','खे','खै','खो','खौ','खं','खः','ग','गा','गि','गी','गु','गू','गे','गै','गो','गौ','गं','गः','घ','घा','घि','घी','घु','घू','घे','घै','घो','घौ','घं','घः'];
+    const out=document.getElementById('bp-letter');
+    let last=-1;
+    document.getElementById('bp-pick').addEventListener('click',()=>{
+      let n; do { n=Math.floor(Math.random()*items.length); } while(items.length>1 && n===last);
+      last=n; out.textContent=items[n];
+    });
+    document.getElementById('bp-reset').addEventListener('click',()=>{last=-1;out.textContent='क';});
+  </script>
+</div>
+</body>
+</html>
