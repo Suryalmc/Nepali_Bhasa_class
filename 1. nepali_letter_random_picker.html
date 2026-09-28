@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nepali Letter Random Picker</title>
+  <style>
+    :root {
+      font-family: "Noto Sans Devanagari", "Mangal", "Kalimati", Arial, sans-serif;
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f5;
+      color: #111;
+    }
+
+    .app {
+      width: min(1000px, 94vw);
+      min-height: 88vh;
+      background: white;
+      border: 2px solid #222;
+      border-radius: 20px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.6rem, 3vw, 2.5rem);
+      text-align: center;
+    }
+
+    .subtitle {
+      margin: 0;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .letter {
+      flex: 1;
+      min-height: 300px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(11rem, 34vw, 24rem);
+      font-weight: 700;
+      line-height: 1;
+      text-align: center;
+      user-select: none;
+    }
+
+    .status {
+      text-align: center;
+      font-size: 1.15rem;
+      line-height: 1.5;
+    }
+
+    .timer {
+      font-weight: 700;
+      font-size: 1.35rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    button, select, input {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid #222;
+      border-radius: 10px;
+      padding: 11px 18px;
+      background: white;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background: #efefef;
+    }
+
+    .settings {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="number"] {
+      width: 80px;
+      padding: 8px;
+      border: 1px solid #777;
+      border-radius: 8px;
+    }
+
+    .small-note {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    @media (max-width: 600px) {
+      .app {
+        min-height: 96vh;
+        padding: 16px;
+        border-radius: 0;
+      }
+
+      .letter {
+        min-height: 240px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div>
+      <h1>नेपाली अक्षर खेल</h1>
+      <p class="subtitle">Nepali Letter Random Picker</p>
+    </div>
+
+    <div id="letter" class="letter">अ</div>
+
+    <div class="status">
+      <div id="progress">Letter 1 of 49</div>
+      <div class="timer">Next letter in: <span id="countdown">15</span> seconds</div>
+    </div>
+
+    <div class="controls">
+      <button id="startPauseBtn">Start</button>
+      <button id="nextBtn">Next</button>
+      <button id="previousBtn">Previous</button>
+      <button id="reshuffleBtn">Reshuffle</button>
+      <button id="fullscreenBtn">Full Screen</button>
+    </div>
+
+    <div class="settings">
+      <label for="secondsInput">Seconds per letter:</label>
+      <input id="secondsInput" type="number" min="3" max="120" value="15" />
+      <button id="applyTimeBtn">Apply</button>
+    </div>
+
+    <div class="small-note">
+      No letter repeats until all letters have been shown. Press Space to start or pause, and Right Arrow for the next letter.
+    </div>
+  </main>
+
+  <script>
+    const vowels = [
+      "अ", "आ", "इ", "ई", "उ", "ऊ", "ऋ",
+      "ए", "ऐ", "ओ", "औ", "अं", "अः"
+    ];
+
+    const consonants = [
+      "क", "ख", "ग", "घ", "ङ",
+      "च", "छ", "ज", "झ", "ञ",
+      "ट", "ठ", "ड", "ढ", "ण",
+      "त", "थ", "द", "ध", "न",
+      "प", "फ", "ब", "भ", "म",
+      "य", "र", "ल", "व",
+      "श", "ष", "स", "ह",
+      "क्ष", "त्र", "ज्ञ"
+    ];
+
+    const allLetters = [...vowels, ...consonants];
+
+    const letterEl = document.getElementById("letter");
+    const progressEl = document.getElementById("progress");
+    const countdownEl = document.getElementById("countdown");
+    const startPauseBtn = document.getElementById("startPauseBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const previousBtn = document.getElementById("previousBtn");
+    const reshuffleBtn = document.getElementById("reshuffleBtn");
+    const fullscreenBtn = document.getElementById("fullscreenBtn");
+    const secondsInput = document.getElementById("secondsInput");
+    const applyTimeBtn = document.getElementById("applyTimeBtn");
+
+    let letters = [];
+    let currentIndex = 0;
+    let secondsPerLetter = 15;
+    let remainingSeconds = secondsPerLetter;
+    let timer = null;
+    let isRunning = false;
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function updateDisplay() {
+      letterEl.textContent = letters[currentIndex];
+      progressEl.textContent = `Letter ${currentIndex + 1} of ${letters.length}`;
+      countdownEl.textContent = remainingSeconds;
+    }
+
+    function resetCountdown() {
+      remainingSeconds = secondsPerLetter;
+      countdownEl.textContent = remainingSeconds;
+    }
+
+    function nextLetter() {
+      if (currentIndex < letters.length - 1) {
+        currentIndex++;
+      } else {
+        letters = shuffle(allLetters);
+        currentIndex = 0;
+      }
+      resetCountdown();
+      updateDisplay();
+    }
+
+    function previousLetter() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        resetCountdown();
+        updateDisplay();
+      }
+    }
+
+    function tick() {
+      remainingSeconds--;
+      countdownEl.textContent = remainingSeconds;
+      if (remainingSeconds <= 0) {
+        nextLetter();
+      }
+    }
+
+    function startTimer() {
+      if (timer) clearInterval(timer);
+      timer = setInterval(tick, 1000);
+      isRunning = true;
+      startPauseBtn.textContent = "Pause";
+    }
+
+    function pauseTimer() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+      isRunning = false;
+      startPauseBtn.textContent = "Start";
+    }
+
+    function toggleTimer() {
+      isRunning ? pauseTimer() : startTimer();
+    }
+
+    function reshuffle() {
+      letters = shuffle(allLetters);
+      currentIndex = 0;
+      resetCountdown();
+      updateDisplay();
+    }
+
+    startPauseBtn.addEventListener("click", toggleTimer);
+    nextBtn.addEventListener("click", nextLetter);
+    previousBtn.addEventListener("click", previousLetter);
+    reshuffleBtn.addEventListener("click", reshuffle);
+
+    applyTimeBtn.addEventListener("click", () => {
+      const value = Number(secondsInput.value);
+      if (!Number.isFinite(value) || value < 3 || value > 120) {
+        alert("Please enter a number between 3 and 120.");
+        return;
+      }
+      secondsPerLetter = value;
+      resetCountdown();
+      updateDisplay();
+    });
+
+    fullscreenBtn.addEventListener("click", async () => {
+      try {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen();
+        } else {
+          await document.exitFullscreen();
+        }
+      } catch (error) {
+        alert("Full-screen mode is not available in this browser.");
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.code === "Space") {
+        event.preventDefault();
+        toggleTimer();
+      } else if (event.code === "ArrowRight") {
+        nextLetter();
+      } else if (event.code === "ArrowLeft") {
+        previousLetter();
+      }
+    });
+
+    reshuffle();
+  </script>
+</body>
+</html>

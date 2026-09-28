@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nepali Action Words</title>
+<style>
+:root{font-family:"Noto Sans Devanagari","Mangal","Kalimati",Arial,sans-serif}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#f5f5f5;display:flex;align-items:center;justify-content:center;color:#111}.app{width:min(1050px,95vw);min-height:90vh;background:#fff;border:2px solid #222;border-radius:20px;padding:28px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;gap:18px}h1{margin:0;text-align:center;font-size:clamp(1.7rem,3vw,2.6rem)}.subtitle{margin:4px 0 0;text-align:center}.card{width:100%;flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:18px}.word{font-size:clamp(4.5rem,12vw,9rem);font-weight:700;line-height:1.1}.meaning{font-size:clamp(1.6rem,3.5vw,2.6rem);font-weight:600}.sentence-ne{font-size:clamp(1.7rem,4vw,3rem);margin-top:12px}.sentence-en{font-size:clamp(1.1rem,2.4vw,1.7rem);color:#444}.status{text-align:center;font-size:1.1rem;line-height:1.5}.timer{font-weight:700;font-size:1.3rem}.controls,.settings{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;align-items:center}button,input{font:inherit}button{border:1px solid #222;background:white;border-radius:10px;padding:11px 18px;cursor:pointer;font-weight:600}button:hover{background:#eee}input{width:80px;padding:8px;border:1px solid #777;border-radius:8px}.note{text-align:center;color:#555;font-size:.9rem}@media(max-width:600px){.app{min-height:96vh;padding:16px;border-radius:0}}
+</style>
+</head>
+<body>
+<main class="app">
+<div><h2>नेपाली क्रियापद अभ्यास</h2><p class="subtitle">Nepali Action Words</p></div>
+<section class="card"><div id="word" class="word"></div><div id="meaning" class="meaning"></div><div id="sentenceNe" class="sentence-ne"></div><div id="sentenceEn" class="sentence-en"></div></section>
+<div class="status"><div id="progress"></div><div class="timer">Next word in: <span id="countdown">15</span> seconds</div></div>
+<div class="controls"><button id="startPause">Start</button><button id="previous">Previous</button><button id="next">Next</button><button id="reshuffle">Reshuffle</button><button id="fullscreen">Full Screen</button></div>
+<div class="settings"><label for="seconds">Seconds per word:</label><input id="seconds" type="number" min="3" max="120" value="15"><button id="apply">Apply</button></div>
+<div class="note">Space = Start/Pause • Right Arrow = Next • Left Arrow = Previous</div>
+</main>
+<script>
+const items = [
+{word:"हिँड्नु",meaning:"to walk",nepali:"म विद्यालयसम्म हिँड्छु।",english:"I walk to school."},
+{word:"दौडनु",meaning:"to run",nepali:"बालक मैदानमा दौडन्छ।",english:"The boy runs in the field."},
+{word:"बस्नु",meaning:"to sit",nepali:"म कुर्सीमा बस्छु।",english:"I sit on the chair."},
+{word:"उठ्नु",meaning:"to get up",nepali:"म बिहान छिट्टै उठ्छु।",english:"I get up early in the morning."},
+{word:"खानु",meaning:"to eat",nepali:"म स्याउ खान्छु।",english:"I eat an apple."},
+{word:"पिउनु",meaning:"to drink",nepali:"म पानी पिउँछु।",english:"I drink water."},
+{word:"सुत्नु",meaning:"to sleep",nepali:"बच्चा राति सुत्छ।",english:"The child sleeps at night."},
+{word:"पढ्नु",meaning:"to read",nepali:"म किताब पढ्छु।",english:"I read a book."},
+{word:"लेख्नु",meaning:"to write",nepali:"म कापीमा लेख्छु।",english:"I write in a notebook."},
+{word:"बोल्नु",meaning:"to speak",nepali:"म नेपाली बोल्छु।",english:"I speak Nepali."},
+{word:"सुन्नु",meaning:"to listen",nepali:"म शिक्षकको कुरा सुन्छु।",english:"I listen to the teacher."},
+{word:"हेर्नु",meaning:"to look/watch",nepali:"म टेलिभिजन हेर्छु।",english:"I watch television."},
+{word:"खेल्नु",meaning:"to play",nepali:"बच्चाहरू बाहिर खेल्छन्।",english:"The children play outside."},
+{word:"नाच्नु",meaning:"to dance",nepali:"उनी गीतमा नाच्छिन्।",english:"She dances to the song."},
+{word:"गाउनु",meaning:"to sing",nepali:"म गीत गाउँछु।",english:"I sing a song."},
+{word:"हाँस्नु",meaning:"to laugh",nepali:"बच्चा हाँस्छ।",english:"The child laughs."},
+{word:"रुनु",meaning:"to cry",nepali:"सानो बच्चा रुन्छ।",english:"The little child cries."},
+{word:"ताली बजाउनु",meaning:"to clap",nepali:"हामी ताली बजाउँछौँ।",english:"We clap our hands."},
+{word:"दौडनु",meaning:"to run",nepali:"बालक दौडन्छ।",english:"The boy runs."},
+{word:"समात्नु",meaning:"to catch/hold",nepali:"म बल समात्छु।",english:"I catch the ball."},
+{word:"फाल्नु",meaning:"to throw",nepali:"म बल फाल्छु।",english:"I throw the ball."},
+{word:"खोल्नु",meaning:"to open",nepali:"म ढोका खोल्छु।",english:"I open the door."},
+{word:"बन्द गर्नु",meaning:"to close",nepali:"म झ्याल बन्द गर्छु।",english:"I close the window."},
+{word:"धुनु",meaning:"to wash",nepali:"म हात धुन्छु।",english:"I wash my hands."},
+{word:"नुहाउनु",meaning:"to bathe",nepali:"म बिहान नुहाउँछु।",english:"I take a bath in the morning."},
+{word:"लगाउनु",meaning:"to put on/wear",nepali:"म जुत्ता लगाउँछु।",english:"I put on shoes."},
+{word:"झिक्नु",meaning:"to take out",nepali:"म झोलाबाट किताब झिक्छु।",english:"I take a book out of the bag."},
+{word:"राख्नु",meaning:"to put/place",nepali:"म किताब टेबलमा राख्छु।",english:"I put the book on the table."},
+{word:"काट्नु",meaning:"to cut",nepali:"म स्याउ काट्छु।",english:"I cut an apple."},
+{word:"बनाउनु",meaning:"to make",nepali:"म चित्र बनाउँछु।",english:"I make a picture."},
+{word:"दिनु",meaning:"to give",nepali:"म साथीलाई कलम दिन्छु।",english:"I give a pen to my friend."},
+{word:"लिनु",meaning:"to take",nepali:"म किताब लिन्छु।",english:"I take the book."},
+{word:"खोज्नु",meaning:"to search/look for",nepali:"म मेरो पेन्सिल खोज्छु।",english:"I look for my pencil."},
+{word:"भेट्नु",meaning:"to meet/find",nepali:"म साथीलाई भेट्छु।",english:"I meet my friend."},
+{word:"सिक्नु",meaning:"to learn",nepali:"म नेपाली सिक्छु।",english:"I learn Nepali."},
+{word:"सिकाउनु",meaning:"to teach",nepali:"शिक्षकले नेपाली सिकाउनुहुन्छ।",english:"The teacher teaches Nepali."},
+{word:"सोध्नु",meaning:"to ask",nepali:"म प्रश्न सोध्छु।",english:"I ask a question."},
+{word:"उत्तर दिनु",meaning:"to answer",nepali:"म प्रश्नको उत्तर दिन्छु।",english:"I answer the question."},
+{word:"सोच्नु",meaning:"to think",nepali:"म उत्तरबारे सोच्छु।",english:"I think about the answer."},
+{word:"सम्झनु",meaning:"to remember",nepali:"म पाठ सम्झन्छु।",english:"I remember the lesson."},
+{word:"उठाउनु",meaning:"to lift/pick up",nepali:"म किताब उठाउँछु।",english:"I pick up the book."},
+{word:"धकेल्नु",meaning:"to push",nepali:"म ढोका धकेल्छु।",english:"I push the door."},
+{word:"तान्नु",meaning:"to pull",nepali:"म डोरी तान्छु।",english:"I pull the rope."},
+{word:"चढ्नु",meaning:"to climb/go up",nepali:"म सिँढी चढ्छु।",english:"I climb the stairs."},
+{word:"ओर्लनु",meaning:"to come down",nepali:"म सिँढीबाट ओर्लन्छु।",english:"I come down the stairs."},
+{word:"पौडिनु",meaning:"to swim",nepali:"म पोखरीमा पौडिन्छु।",english:"I swim in the pool."},
+{word:"उफ्रिनु",meaning:"to jump",nepali:"बच्चा माथि उफ्रिन्छ।",english:"The child jumps up."},
+{word:"हल्लाउनु",meaning:"to shake/wave",nepali:"म हात हल्लाउँछु।",english:"I wave my hand."},
+{word:"देखाउनु",meaning:"to show",nepali:"म शिक्षकलाई चित्र देखाउँछु।",english:"I show the picture to the teacher."},
+{word:"सफा गर्नु",meaning:"to clean",nepali:"म मेरो कोठा सफा गर्छु।",english:"I clean my room."}
+];
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+let deck=shuffle(items),index=0,secondsPerWord=15,remaining=15,timer=null,running=false;
+const wordEl=document.getElementById("word"),meaningEl=document.getElementById("meaning"),sentenceNeEl=document.getElementById("sentenceNe"),sentenceEnEl=document.getElementById("sentenceEn"),progressEl=document.getElementById("progress"),countdownEl=document.getElementById("countdown"),startPause=document.getElementById("startPause");
+function show(){const x=deck[index];wordEl.textContent=x.word;meaningEl.textContent=x.meaning;sentenceNeEl.textContent=x.nepali;sentenceEnEl.textContent=x.english;progressEl.textContent=`Word ${index+1} of ${deck.length}`;countdownEl.textContent=remaining}
+function resetCountdown(){remaining=secondsPerWord;countdownEl.textContent=remaining}
+function nextWord(){if(index<deck.length-1)index++;else{deck=shuffle(items);index=0}resetCountdown();show()}
+function previousWord(){if(index>0){index--;resetCountdown();show()}}
+function tick(){remaining--;countdownEl.textContent=remaining;if(remaining<=0)nextWord()}
+function start(){if(timer)clearInterval(timer);timer=setInterval(tick,1000);running=true;startPause.textContent="Pause"}
+function pause(){if(timer)clearInterval(timer);timer=null;running=false;startPause.textContent="Start"}
+startPause.onclick=()=>running?pause():start();document.getElementById("next").onclick=nextWord;document.getElementById("previous").onclick=previousWord;document.getElementById("reshuffle").onclick=()=>{deck=shuffle(items);index=0;resetCountdown();show()};document.getElementById("apply").onclick=()=>{const v=Number(document.getElementById("seconds").value);if(!Number.isFinite(v)||v<3||v>120){alert("Please choose a time between 3 and 120 seconds.");return}secondsPerWord=v;resetCountdown();show()};document.getElementById("fullscreen").onclick=async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){alert("Full-screen mode is not available in this browser.")}};document.addEventListener("keydown",e=>{if(e.code==="Space"){e.preventDefault();running?pause():start()}else if(e.code==="ArrowRight")nextWord();else if(e.code==="ArrowLeft")previousWord()});show();
+</script>
+</body>
+</html>

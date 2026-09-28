@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Nepali Word Practice</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f5f5f5;
+      font-family: "Noto Sans Devanagari", "Mangal", "Kalimati", Arial, sans-serif;
+      color: #111;
+    }
+
+    .app {
+      width: min(1050px, 95vw);
+      min-height: 90vh;
+      background: #fff;
+      border: 2px solid #222;
+      border-radius: 20px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+    }
+
+    .subtitle {
+      margin: 5px 0;
+      text-align: center;
+    }
+
+    .card {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      text-align: center;
+    }
+
+    .nepali {
+      font-size: clamp(5rem, 15vw, 11rem);
+      font-weight: 700;
+    }
+
+    .english {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 600;
+    }
+
+    .status {
+      text-align: center;
+      font-size: 1.1rem;
+      line-height: 1.5;
+    }
+
+    .timer {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .controls,
+    .settings {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      padding: 11px 18px;
+      border: 1px solid #222;
+      border-radius: 10px;
+      background: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background: #eee;
+    }
+
+    input {
+      width: 80px;
+      padding: 8px;
+      border: 1px solid #777;
+      border-radius: 8px;
+    }
+
+    .note {
+      font-size: 0.9rem;
+      color: #555;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="app">
+
+    <div>
+      <h1>नेपाली शब्द अभ्यास</h1>
+      <p class="subtitle">Nepali Word Practice</p>
+    </div>
+
+    <section class="card">
+      <div id="nepali" class="nepali"></div>
+      <div id="english" class="english"></div>
+    </section>
+
+    <div class="status">
+      <div id="progress"></div>
+
+      <div class="timer">
+        Next word in:
+        <span id="countdown">15</span>
+        seconds
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="startPause">Start</button>
+      <button id="previous">Previous</button>
+      <button id="next">Next</button>
+      <button id="reshuffle">Reshuffle</button>
+      <button id="fullscreen">Full Screen</button>
+    </div>
+
+    <div class="settings">
+      <label>
+        Seconds per word:
+        <input
+          id="seconds"
+          type="number"
+          min="3"
+          max="120"
+          value="15"
+        >
+      </label>
+
+      <button id="apply">Apply</button>
+    </div>
+
+    <div class="note">
+      Space = Start/Pause • Right Arrow = Next • Left Arrow = Previous
+    </div>
+
+  </main>
+
+
+  <script>
+
+    const items = [
+      { nepali: "ढल", english: "slope / drain" },
+      { nepali: "दल", english: "group / team" },
+      { nepali: "बल", english: "strength" },
+      { nepali: "मल", english: "fertilizer / manure" },
+      { nepali: "वन", english: "forest" },
+      { nepali: "मन", english: "mind / heart" },
+      { nepali: "धन", english: "wealth" },
+      { nepali: "तन", english: "body" },
+      { nepali: "डर", english: "fear" },
+      { nepali: "घर", english: "house" },
+      { nepali: "जय", english: "victory" },
+      { nepali: "सय", english: "hundred" },
+      { nepali: "कम", english: "less" },
+      { nepali: "पत्र", english: "letter / leaf" },
+      { nepali: "अब", english: "now" },
+      { nepali: "आज", english: "today" },
+      { nepali: "ईख", english: "ego" },
+      { nepali: "तह", english: "level / layer" },
+      { nepali: "थप", english: "more / additional" },
+      { nepali: "आय", english: "income" },
+      { nepali: "तर", english: "but" },
+      { nepali: "क्षण", english: "moment" },
+      { nepali: "नङ", english: "nail" },
+      { nepali: "ठग", english: "cheater" },
+      { nepali: "यज्ञ", english: "sacred ritual" },
+      { nepali: "जगत", english: "world" },
+      { nepali: "झलक", english: "glimpse" },
+      { nepali: "टहल", english: "stroll / walk" },
+      { nepali: "अरब", english: "billion" },
+      { nepali: "असल", english: "good" },
+      { nepali: "असर", english: "effect" },
+      { nepali: "बहस", english: "discussion / debate" },
+      { nepali: "भवन", english: "building" },
+      { nepali: "चउर", english: "open field" },
+      { nepali: "पवन", english: "wind" },
+      { nepali: "हवन", english: "fire ritual" },
+      { nepali: "चलन", english: "custom / practice" },
+      { nepali: "नहर", english: "canal" },
+      { nepali: "कमर", english: "waist" },
+      { nepali: "कदम", english: "step" },
+      { nepali: "खपत", english: "consumption" },
+      { nepali: "खबर", english: "news" },
+      { nepali: "चरण", english: "step / foot" },
+      { nepali: "अक्षर", english: "letter" },
+      { nepali: "महल", english: "palace" },
+      { nepali: "नगर", english: "city / town" },
+      { nepali: "गलत", english: "wrong" },
+      { nepali: "नरम", english: "soft" },
+      { nepali: "पसल", english: "shop" },
+      { nepali: "फरक", english: "difference" },
+      { nepali: "ठहर", english: "conclude" },
+      { nepali: "रगत", english: "blood" },
+      { nepali: "समय", english: "time" },
+      { nepali: "सफल", english: "successful" },
+      { nepali: "सरल", english: "simple" },
+      { nepali: "रकम", english: "amount / money" },
+      { nepali: "रहर", english: "desire / wish" },
+      { nepali: "सडक", english: "road" },
+      { nepali: "अलग", english: "separate / different" },
+      { nepali: "शहर", english: "city" },
+      { nepali: "मदत", english: "help" },
+      { nepali: "छलफल", english: "discussion" },
+      { nepali: "हलचल", english: "movement / activity" },
+      { nepali: "कटहर", english: "jackfruit" },
+      { nepali: "सहमत", english: "agree / in agreement" },
+      { nepali: "सकभर", english: "as much as possible" },
+      { nepali: "जलचर", english: "aquatic animal" },
+      { nepali: "एकदम", english: "completely / very" }
+    ];
+
+
+    function shuffle(arr) {
+      const a = [...arr];
+
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+
+      return a;
+    }
+
+
+    let deck = shuffle(items);
+    let index = 0;
+    let secondsPerWord = 15;
+    let remaining = 15;
+    let timer = null;
+    let running = false;
+
+
+    const nepaliDisplay = document.getElementById("nepali");
+    const englishDisplay = document.getElementById("english");
+    const progress = document.getElementById("progress");
+    const countdown = document.getElementById("countdown");
+    const startPauseButton = document.getElementById("startPause");
+
+
+    function show() {
+      const currentWord = deck[index];
+
+      nepaliDisplay.textContent = currentWord.nepali;
+      englishDisplay.textContent = currentWord.english;
+
+      progress.textContent =
+        `Word ${index + 1} of ${deck.length}`;
+
+      countdown.textContent = remaining;
+    }
+
+
+    function resetTimer() {
+      remaining = secondsPerWord;
+      countdown.textContent = remaining;
+    }
+
+
+    function nextWord() {
+
+      if (index < deck.length - 1) {
+        index++;
+      } else {
+        deck = shuffle(items);
+        index = 0;
+      }
+
+      resetTimer();
+      show();
+    }
+
+
+    function previousWord() {
+
+      if (index > 0) {
+        index--;
+        resetTimer();
+        show();
+      }
+
+    }
+
+
+    function tick() {
+
+      remaining--;
+      countdown.textContent = remaining;
+
+      if (remaining <= 0) {
+        nextWord();
+      }
+
+    }
+
+
+    function start() {
+
+      if (timer) {
+        clearInterval(timer);
+      }
+
+      timer = setInterval(tick, 1000);
+
+      running = true;
+      startPauseButton.textContent = "Pause";
+    }
+
+
+    function pause() {
+
+      if (timer) {
+        clearInterval(timer);
+      }
+
+      timer = null;
+      running = false;
+
+      startPauseButton.textContent = "Start";
+    }
+
+
+    startPauseButton.onclick = () => {
+
+      if (running) {
+        pause();
+      } else {
+        start();
+      }
+
+    };
+
+
+    document.getElementById("next").onclick = nextWord;
+
+    document.getElementById("previous").onclick = previousWord;
+
+
+    document.getElementById("reshuffle").onclick = () => {
+
+      deck = shuffle(items);
+      index = 0;
+
+      resetTimer();
+      show();
+
+    };
+
+
+    document.getElementById("apply").onclick = () => {
+
+      const value =
+        Number(document.getElementById("seconds").value);
+
+      if (value < 3 || value > 120) {
+
+        alert("Choose 3–120 seconds.");
+        return;
+
+      }
+
+      secondsPerWord = value;
+
+      resetTimer();
+      show();
+
+    };
+
+
+    document.getElementById("fullscreen").onclick = async () => {
+
+      if (!document.fullscreenElement) {
+
+        await document.documentElement.requestFullscreen();
+
+      } else {
+
+        await document.exitFullscreen();
+
+      }
+
+    };
+
+
+    document.addEventListener("keydown", event => {
+
+      if (event.code === "Space") {
+
+        event.preventDefault();
+
+        if (running) {
+          pause();
+        } else {
+          start();
+        }
+
+      }
+
+      else if (event.code === "ArrowRight") {
+        nextWord();
+      }
+
+      else if (event.code === "ArrowLeft") {
+        previousWord();
+      }
+
+    });
+
+
+    show();
+
+  </script>
+
+</body>
+</html>
